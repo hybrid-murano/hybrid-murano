@@ -84,11 +84,11 @@ def verify_and_get_env(db_session, environment_id, request):
             'Environment with id {0} not found').format(environment_id))
         raise exc.HTTPNotFound
 
-    if environment_id != envs.get_cloud_id():
-        if environment.tenant_id != request.context.tenant:
-            LOG.info(_LI(
-                'User is not authorized to access this tenant resources.'))
-            raise exc.HTTPUnauthorized
+#    if environment_id != envs.get_cloud_id():
+#        if environment.tenant_id != request.context.tenant:
+#            LOG.info(_LI(
+#                'User is not authorized to access this tenant resources.'))
+#            raise exc.HTTPUnauthorized
     return environment
 
 

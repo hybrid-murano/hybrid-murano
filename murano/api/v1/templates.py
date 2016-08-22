@@ -215,10 +215,10 @@ class Controller(object):
             raise exc.HTTPNotFound(explanation=mng)
         get_env_template = env_temps.EnvTemplateServices.get_env_template
         env_template = get_env_template(env_template_id)
-        if env_template.tenant_id != request.context.tenant:
-            LOG.exception(_('User is not authorized to access '
-                            'this tenant resources.'))
-            raise exc.HTTPUnauthorized
+#        if env_template.tenant_id != request.context.tenant:
+#            LOG.exception(_('User is not authorized to access '
+#                            'this tenant resources.'))
+#            raise exc.HTTPUnauthorized
 
 
 def create_resource():

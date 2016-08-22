@@ -40,11 +40,18 @@ VALID_NAME_REGEX = re.compile('^[a-zA-Z]+[\w-]*$')
 class Controller(object):
     @request_statistics.stats_count(API_NAME, 'Index')
     def index(self, request):
-        LOG.debug('Environments:List')
-        policy.check('list_environments', request.context)
+        all_tenants = request.GET.get('all_tenants', 'false').lower() == 'true'
+        LOG.debug('Environments:List <all_tenants: {tenants}>'.format(
+                  tenants=all_tenants))
 
-        # Only environments from same tenant as user should be returned
-        filters = {'tenant_id': request.context.tenant}
+        if all_tenants:
+            policy.check('list_environments_all_tenants', request.context)
+            filters = {}
+        else:
+            policy.check('list_environments', request.context)
+            # Only environments from same tenant as user should be returned
+            filters = {'tenant_id': request.context.tenant}
+
         environments = envs.EnvironmentServices.get_environments_by(filters)
         environments = [env.to_dict() for env in environments]
 
@@ -97,11 +104,11 @@ class Controller(object):
                     environment_id))
                 raise exc.HTTPNotFound
 
-        if environment_id != envs.get_cloud_id():
-            if environment.tenant_id != request.context.tenant:
-                LOG.info(_LI('User is not authorized to access '
-                             'this tenant resources.'))
-                raise exc.HTTPUnauthorized
+#        if environment_id != envs.get_cloud_id():
+#            if environment.tenant_id != request.context.tenant:
+#                LOG.info(_LI('User is not authorized to access '
+#                             'this tenant resources.'))
+#                raise exc.HTTPUnauthorized
 
         env = environment.to_dict()
         env['status'] = envs.EnvironmentServices.get_status(env['id'])
@@ -131,10 +138,10 @@ class Controller(object):
                          'found').format(environment_id))
             raise exc.HTTPNotFound
 
-        if environment.tenant_id != request.context.tenant:
-            LOG.info(_LI('User is not authorized to access '
-                         'this tenant resources.'))
-            raise exc.HTTPUnauthorized
+#        if environment.tenant_id != request.context.tenant:
+#            LOG.info(_LI('User is not authorized to access '
+#                         'this tenant resources.'))
+#            raise exc.HTTPUnauthorized
 
         LOG.debug('ENV NAME: {0}>'.format(body['name']))
         if VALID_NAME_REGEX.match(str(body['name'])):

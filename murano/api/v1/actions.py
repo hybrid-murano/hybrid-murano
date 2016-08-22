@@ -38,10 +38,10 @@ class Controller(object):
                          'is not found').format(environment_id))
             raise exc.HTTPNotFound
 
-        if environment.tenant_id != request.context.tenant:
-            LOG.info(_LI('User is not authorized to access '
-                         'this tenant resources.'))
-            raise exc.HTTPUnauthorized
+#        if environment.tenant_id != request.context.tenant:
+#            LOG.info(_LI('User is not authorized to access '
+#                         'this tenant resources.'))
+#            raise exc.HTTPUnauthorized
 
     def execute(self, request, environment_id, action_id, body):
         policy.check("execute_action", request.context, {})
