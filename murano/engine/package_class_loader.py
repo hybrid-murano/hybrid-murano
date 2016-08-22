@@ -30,6 +30,14 @@ from murano.packages import exceptions as pkg_exceptions
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
+def memoize(f):
+    cache = {}
+    def wrapper(*args, **kwargs):
+        key = str(args[1:]) + str(kwargs)
+        if key not in cache:
+            cache[key] = f(*args, **kwargs)
+        return cache[key]
+    return wrapper
 
 class PackageClassLoader(class_loader.MuranoClassLoader):
     def __init__(self, package_loader):
@@ -46,8 +54,10 @@ class PackageClassLoader(class_loader.MuranoClassLoader):
                     self._class_packages[cn] = package
         return package
 
+    @memoize
     def load_definition(self, name):
         try:
+            LOG.info('loading {0}...'.format(name))
             package = self._get_package_for(name)
             if package is None:
                 raise exceptions.NoPackageForClassFound(name)
