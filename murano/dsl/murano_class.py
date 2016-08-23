@@ -31,8 +31,7 @@ def classname(name):
 
 class MuranoClass(object):
     def __init__(self, class_loader, namespace_resolver, name, package,
-                 parents=None, version='latest'):
-        self._version = version
+                 parents=None):
         self._package = package
         self._class_loader = class_loader
         self._methods = {}
@@ -51,10 +50,6 @@ class MuranoClass(object):
         bases = tuple(parents_class) or (murano_object.MuranoObject,)
 
         self.object_class = type(class_name, bases, {})
-
-    @property
-    def version(self):
-        return self._version
 
     @property
     def name(self):

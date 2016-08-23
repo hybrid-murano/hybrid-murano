@@ -189,7 +189,7 @@ class MuranoObject(object):
         result = {}
         for parent in self.__parents.values():
             result.update(parent.to_dictionary(include_hidden))
-        result.update({'?': {'type': self.type.name, 'version': self.type.version, 'id': self.object_id}})
+        result.update({'?': {'type': self.type.name, 'id': self.object_id}})
         if include_hidden:
             result.update(self.__properties)
         else:

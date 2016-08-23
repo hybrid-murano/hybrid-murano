@@ -68,9 +68,8 @@ class MuranoClassLoader(object):
                 full_name = ns_resolver.resolve_name(parent_name)
                 parent_classes.append(self.get_class(full_name))
 
-        version = data.get('Version', 'latest')
         type_obj = murano_class.MuranoClass(self, ns_resolver, name,
-                                            package, parent_classes, version)
+                                            package, parent_classes)
 
         properties = data.get('Properties', {})
         for property_name, property_spec in properties.iteritems():
