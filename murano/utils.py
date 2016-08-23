@@ -38,12 +38,12 @@ def verify_env(func):
                          " not found").format(environment_id))
             raise exc.HTTPNotFound()
 
-        if hasattr(request, 'context'):
-            if environment_id != envs.get_cloud_id():
-                if environment.tenant_id != request.context.tenant:
-                    LOG.info(_LI('User is not authorized to access'
-                                 ' these tenant resources'))
-                    raise exc.HTTPUnauthorized()
+#        if hasattr(request, 'context'):
+#            if environment_id != envs.get_cloud_id():
+#                if environment.tenant_id != request.context.tenant:
+#                    LOG.info(_LI('User is not authorized to access'
+#                                 ' these tenant resources'))
+#                    raise exc.HTTPUnauthorized()
 
         return func(self, request, environment_id, *args, **kwargs)
     return __inner
@@ -59,11 +59,11 @@ def verify_env_template(func):
                      format(env_template_id))
             raise exc.HTTPNotFound()
 
-        if hasattr(request, 'context'):
-            if template.tenant_id != request.context.tenant:
-                LOG.info(_LI('User is not authorized to access '
-                             'this tenant resources'))
-                raise exc.HTTPUnauthorized()
+#        if hasattr(request, 'context'):
+#            if template.tenant_id != request.context.tenant:
+#                LOG.info(_LI('User is not authorized to access '
+#                             'this tenant resources'))
+#                raise exc.HTTPUnauthorized()
 
         return func(self, request, env_template_id, *args, **kwargs)
     return __inner
