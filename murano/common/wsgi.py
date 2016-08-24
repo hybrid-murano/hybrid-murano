@@ -43,6 +43,8 @@ from murano.openstack.common import log as logging
 from murano.openstack.common import service
 from murano.openstack.common import sslutils
 
+eventlet.wsgi.MAX_HEADER_LINE = 32768
+
 socket_opts = [
     cfg.IntOpt('backlog',
                default=4096,
