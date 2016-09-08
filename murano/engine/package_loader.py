@@ -78,7 +78,7 @@ class ApiPackageLoader(PackageLoader):
                                                  str(uuid.uuid4())))
         os.makedirs(directory)
 
-        LOG.debug('Cache for package loader is located at: %s' % directory)
+        LOG.info('Cache for package loader is located at: %s' % directory)
         return directory
 
     def _get_definition(self, filter_opts):
