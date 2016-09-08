@@ -148,12 +148,15 @@ class TaskExecutor(object):
                 self._delete_trust()
 
     def _execute(self, pkg_loader):
+        LOG.info(_LI('loading plugin'))
         class_loader = package_class_loader.PackageClassLoader(pkg_loader)
         system_objects.register(class_loader, pkg_loader)
         get_plugin_loader().register_in_loader(class_loader)
 
+        LOG.info(_LI('loading environment'))
         exc = executor.MuranoDslExecutor(class_loader, self.environment)
         obj = exc.load(self.model)
+        LOG.info(_LI('environment loaded'))
 
         self._validate_model(obj, self.action, class_loader)
         action_result = None
@@ -173,7 +176,7 @@ class TaskExecutor(object):
 
         if exception is None and self.action:
             try:
-                LOG.info(_LI('Invoking pre-execution hooks'))
+                LOG.info(_LI('Invoking pre-execution hooks: {0}'.format(self.action['method'])))
                 self.environment.start()
                 action_result = self._invoke(exc)
             except Exception as e:
