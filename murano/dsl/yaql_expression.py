@@ -80,7 +80,7 @@ class YaqlExpression(object):
         except Exception:
             import sys,traceback
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            LOG.info(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+            LOG.debug(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
             msg = "Failed to execute expression: {0}".format(self._expression)
             LOG.error(msg)
             raise
