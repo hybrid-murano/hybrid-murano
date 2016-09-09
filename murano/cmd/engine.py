@@ -47,12 +47,6 @@ def main():
         config.parse_args()
         log.setup('murano')
 
-        '''        
-        other_is_deploying = unit.query(models.Session).filter_by(
-            environment_id=session.environment_id,
-            state=states.SessionState.DEPLOYING
-        ).count() > 0
-        '''
         unit = db_session.get_session()
         with unit.begin():
             unit.query(models.Session).filter_by(state=states.SessionState.DEPLOYING).update({'state': states.SessionState.DEPLOY_FAILURE})
