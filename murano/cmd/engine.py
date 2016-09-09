@@ -38,11 +38,25 @@ from murano.common import engine
 from murano.openstack.common import log
 from murano.openstack.common import service
 
+from murano.db import models
+from murano.db import session as db_session
+from murano.services import states
 
 def main():
     try:
         config.parse_args()
         log.setup('murano')
+
+        '''        
+        other_is_deploying = unit.query(models.Session).filter_by(
+            environment_id=session.environment_id,
+            state=states.SessionState.DEPLOYING
+        ).count() > 0
+        '''
+        unit = db_session.get_session()
+        with unit.begin():
+            unit.query(models.Session).filter_by(state=states.SessionState.DEPLOYING).update({'state': states.SessionState.DEPLOY_FAILURE})
+            unit.query(models.Session).filter_by(state=states.SessionState.DELETING).update({'state': states.SessionState.DELETE_FAILURE})
 
         launcher = service.ServiceLauncher()
         launcher.launch_service(engine.get_rpc_service())
