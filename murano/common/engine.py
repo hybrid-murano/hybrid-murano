@@ -47,10 +47,15 @@ LOG = logging.getLogger(__name__)
 
 eventlet.debug.hub_exceptions(False)
 
+from murano.common import memoized
 
 class TaskProcessingEndpoint(object):
     @staticmethod
     def handle_task(context, task):
+        if task['tenant_id'] == '-1' and task['action'] == 'delete_package':
+            memoized.memoized_del(task['id'], task['fqn'])
+            return
+
         s_task = token_sanitizer.TokenSanitizer().sanitize(task)
         LOG.info(_LI('Starting processing task: {task_desc}').format(
             task_desc=jsonutils.dumps(s_task)))

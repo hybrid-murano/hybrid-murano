@@ -26,6 +26,8 @@ import murano.packages.exceptions as e
 import murano.packages.versions.hot_v1
 import murano.packages.versions.mpl_v1
 
+from murano.openstack.common import log as logging
+LOG = logging.getLogger(__name__)
 
 def load_from_file(archive_path, target_dir=None, drop_dir=False,
                    loader=yaql_yaml_loader.YaqlYamlLoader):
@@ -40,7 +42,8 @@ def load_from_file(archive_path, target_dir=None, drop_dir=False,
         created = True
     else:
         if os.listdir(target_dir):
-            raise e.PackageLoadError('Target directory is not empty')
+            LOG.info('Target directory {0} is not empty'.format(target_dir))
+            #raise e.PackageLoadError('Target directory is not empty')
 
     try:
         if not zipfile.is_zipfile(archive_path):

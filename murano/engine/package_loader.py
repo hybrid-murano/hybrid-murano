@@ -33,6 +33,7 @@ from murano.packages import load_utils
 
 LOG = logging.getLogger(__name__)
 
+from murano.common import memoized
 
 class PackageLoader(six.with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
@@ -57,7 +58,7 @@ class ApiPackageLoader(PackageLoader):
         except LookupError:
             exc_info = sys.exc_info()
             raise exceptions.NoPackageForClassFound(name), None, exc_info[2]
-        return self._get_package_by_definition(package_definition)
+        return self._get_package_by_definition(package_definition.id, package_definition.fully_qualified_name)
 
     def get_package(self, name):
         filter_opts = {'fqn': name}
@@ -66,7 +67,7 @@ class ApiPackageLoader(PackageLoader):
         except LookupError:
             exc_info = sys.exc_info()
             raise exceptions.NoPackageFound(name), None, exc_info[2]
-        return self._get_package_by_definition(package_definition)
+        return self._get_package_by_definition(package_definition.id, package_definition.fully_qualified_name)
 
     @staticmethod
     def _get_cache_directory():
@@ -102,9 +103,10 @@ class ApiPackageLoader(PackageLoader):
             LOG.debug('Failed to get package definition from repository')
             raise LookupError()
 
-    def _get_package_by_definition(self, package_def):
-        package_id = package_def.id
-        package_name = package_def.fully_qualified_name
+    @memoized.memoized_method('package')
+    def _get_package_by_definition(self, package_id, package_name):
+        #package_id = package_def.id
+        #package_name = package_def.fully_qualified_name
         package_directory = os.path.join(self._cache_directory, package_name)
 
         if os.path.exists(package_directory):
@@ -147,14 +149,14 @@ class ApiPackageLoader(PackageLoader):
             except OSError:
                 pass
 
-    def cleanup(self):
-        shutil.rmtree(self._cache_directory, ignore_errors=True)
+    #def cleanup(self):
+    #    shutil.rmtree(self._cache_directory, ignore_errors=True)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.cleanup()
+    #    self.cleanup()
         return False
 
 

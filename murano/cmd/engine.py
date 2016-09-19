@@ -16,6 +16,8 @@
 
 import os
 import sys
+import shutil
+import tempfile
 
 import eventlet
 
@@ -51,6 +53,12 @@ def main():
         with unit.begin():
             unit.query(models.Session).filter_by(state=states.SessionState.DEPLOYING).update({'state': states.SessionState.DEPLOY_FAILURE})
             unit.query(models.Session).filter_by(state=states.SessionState.DELETING).update({'state': states.SessionState.DELETE_FAILURE})
+
+        base_directory = (
+            config.CONF.packages_opts.packages_cache or
+            os.path.join(tempfile.gettempdir(), 'murano-packages-cache')
+        )
+        shutil.rmtree(base_directory, ignore_errors=True)
 
         launcher = service.ServiceLauncher()
         launcher.launch_service(engine.get_rpc_service())

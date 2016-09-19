@@ -367,7 +367,7 @@ def package_upload(values, tenant_id):
     tenant_lock = db_session.get_lock("classes_of_" + tenant_id, session)
     try:
         _check_for_existing_classes(session, values.get('class_definitions'),
-                                    tenant_id, check_public=is_public)
+                                    tenant_id, check_public=is_public, version=values.get('version'))
         if is_public:
             _check_for_public_packages_with_fqn(
                 session,
@@ -391,7 +391,7 @@ def package_upload(values, tenant_id):
 
     return package
 
-
+from murano.common import rpc
 def package_delete(package_id_or_name, context):
     """Delete a package by name or by ID."""
     session = db_session.get_session()
@@ -402,6 +402,13 @@ def package_delete(package_id_or_name, context):
             raise exc.HTTPForbidden(
                 explanation='Package is not owned by the'
                             ' tenant "{0}"'.format(context.tenant))
+        task = {
+            'tenant_id': '-1',
+            'action': 'delete_package',
+            'id': package.id,
+            'fqn': package.fully_qualified_name,
+        }
+        rpc.engine().handle_task(task)
         session.delete(package)
 
 
@@ -466,7 +473,7 @@ def category_delete(category_id):
 
 def _check_for_existing_classes(session, class_names, tenant_id,
                                 check_public=False,
-                                ignore_package_with_id=None):
+                                ignore_package_with_id=None, version=None):
     if not class_names:
         return
     q = session.query(models.Class.name).filter(
