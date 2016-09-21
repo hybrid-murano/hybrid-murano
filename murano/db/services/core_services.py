@@ -61,10 +61,10 @@ class CoreServices(object):
 
         result = utils.TraverseHelper.get(path, env_description)
 
-        if path == '/services':
-            get_status = CoreServices.get_service_status
-            for srv in result:
-                srv['?']['status'] = get_status(environment_id, srv['?']['id'])
+        #if path == '/services':
+        #    get_status = CoreServices.get_service_status
+        #    for srv in result:
+        #        srv['?']['status'] = get_status(environment_id, srv['?']['id'])
 
         return result
 
