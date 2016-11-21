@@ -32,6 +32,7 @@ PKG_PARAMS_MAP = {'display_name': 'name',
                   'classes': 'class_definitions',
                   'tags': 'tags',
                   'supplier': 'supplier',
+                  'version': 'version',
                   'supplier_logo': 'supplier_logo'}
 
 

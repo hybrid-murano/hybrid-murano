@@ -115,3 +115,20 @@ class SessionServices(object):
             action_name, environment.id,
             {}, environment, session,
             token, unit)
+
+    @staticmethod
+    def stop(session, environment, unit, token):
+        """Prepares environment for deployment and send deployment command to
+        orchestration engine
+
+        :param session: session that is going to be deployed
+        :param unit: SQLalchemy session
+        :param token: auth token that is going to be used by orchestration
+        """
+
+        deleted = session.description['Objects'] is None
+        action_name = None if deleted else 'stop'
+        actions.ActionServices.submit_task(
+            action_name, environment.id,
+            {}, environment, session,
+            token, unit)

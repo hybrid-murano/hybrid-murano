@@ -343,10 +343,31 @@ def _first_or_default2(collection, default):
         return default
 
 
+@yaql.context.EvalArg('collection', collections.Iterable)
+@yaql.context.EvalArg('position', int)
+def _delete(collection, position):
+    import pdb; pdb.set_trace()
+    for i, t in enumerate(collection):
+        if not position == i:
+            yield t
+
+
+@yaql.context.EvalArg('collection', collections.Iterable)
+@yaql.context.EvalArg('position', int)
+def _delete2(collection, position, count):
+    for i, t in enumerate(collection):
+        if count >= 0 and not position <= i < position + count:
+            yield t
+        elif count < 0 and not i >= position:
+            yield t
+
+
 def register(context):
     context.register_function(
         lambda json, mappings: _transform_json(json(), mappings()), 'bind')
 
+    context.register_function(_delete, 'delete')
+    context.register_function(_delete2, 'delete')
     context.register_function(_format, 'format')
     context.register_function(_replace_str, 'replace')
     context.register_function(_replace_dict, 'replace')

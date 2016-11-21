@@ -53,6 +53,27 @@ class _MuranoBase(models.ModelBase):
 Base = declarative.declarative_base(cls=_MuranoBase)
 
 
+class Model(Base, TimestampMixin):
+    """Represents a Model in the metadata-store."""
+    __tablename__ = 'model'
+    __table_args__ = (sa.Index(
+        'ix_name_tenant_id', 'name', 'tenant_id', unique=True),)
+
+    id = sa.Column(sa.String(255),
+                   primary_key=True,
+                   default=uuidutils.generate_uuid)
+    name = sa.Column(sa.String(255), nullable=False)
+    tenant_id = sa.Column(sa.String(36), nullable=False)
+    version = sa.Column(sa.BigInteger, nullable=False, default=0)
+    type = sa.Column(sa.Integer(), nullable=True, default=1)
+    model = sa.Column(st.JsonBlob(), nullable=False, default={})
+
+    def to_dict(self):
+        dictionary = super(Model, self).to_dict()
+        del dictionary['model']
+        return dictionary
+
+
 class Environment(Base, TimestampMixin):
     """Represents a Environment in the metadata-store."""
     __tablename__ = 'environment'
@@ -231,6 +252,7 @@ class Package(Base, TimestampMixin):
     archive = sa.Column(st.LargeBinary())
     fully_qualified_name = sa.Column(sa.String(128),
                                      nullable=False)
+    version = sa.Column(sa.String(128), nullable=True)
     type = sa.Column(sa.String(20), nullable=False, default='class')
     author = sa.Column(sa.String(80), default='Openstack')
     supplier = sa.Column(st.JsonBlob(), nullable=True, default={})

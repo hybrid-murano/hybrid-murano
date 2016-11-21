@@ -179,32 +179,26 @@ class HeatStack(murano_object.MuranoObject):
 
         current_status = self._get_status(_context)
         resources = template.get('Resources') or template.get('resources')
-        if current_status == 'NOT_FOUND':
-            if resources is not None:
+        if resources is not None:
+            if current_status == 'NOT_FOUND':
                 token_client = self._clients.get_heat_client(_context, False)
                 token_client.stacks.create(
                     stack_name=self._name,
                     parameters=self._parameters,
                     template=template,
                     disable_rollback=True)
-
-                self._wait_state(
-                    _context,
-                    lambda status: status == 'CREATE_COMPLETE')
-        else:
-            if resources is not None:
+            else:
                 trust_client = self._clients.get_heat_client(_context)
-
                 trust_client.stacks.update(
                     stack_id=self._name,
                     parameters=self._parameters,
                     template=template,
                     disable_rollback=True)
-                self._wait_state(
-                    _context,
-                    lambda status: status == 'UPDATE_COMPLETE')
-            else:
-                self.delete(_context)
+            self._wait_state(
+                _context,
+                lambda status: status in ('UPDATE_COMPLETE', 'CREATE_COMPLETE'))
+        else:
+            self.delete(_context)
 
         self._applied = not utils.is_different(self._template, template)
 

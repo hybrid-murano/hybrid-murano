@@ -46,6 +46,11 @@ class ApplicationPackage(object):
         self._logo_cache = None
         self._supplier_logo_cache = None
         self._blob_cache = None
+        self._version = None
+
+    @property
+    def version(self):
+        return self._version
 
     @property
     def full_name(self):

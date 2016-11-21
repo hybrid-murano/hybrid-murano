@@ -21,7 +21,7 @@ import types
 import urlparse
 import uuid
 
-import eventlet.event
+import eventlet
 
 import murano.common.config as config
 import murano.common.exceptions as exceptions
@@ -30,6 +30,7 @@ import murano.dsl.murano_class as murano_class
 import murano.dsl.murano_object as murano_object
 import murano.dsl.yaql_expression as yaql_expression
 import murano.engine.system.common as common
+from time import sleep
 
 LOG = logging.getLogger(__name__)
 
@@ -68,8 +69,19 @@ class Agent(murano_object.MuranoObject):
                       'by the server configuration')
             return
 
-        with common.create_rmq_client() as client:
-            client.declare(self._queue, enable_ha=True, ttl=86400000)
+        for num in range(1,3):
+            try:
+                with common.create_rmq_client() as client:
+                    client.declare(self._queue, enable_ha=True, ttl=86400000)
+            except Exception:
+                eventlet.sleep(10)
+                if num != 3:
+                    continue
+                else:
+                    import sys,traceback
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    LOG.info(repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+                    raise
 
     def queueName(self):
         return self._queue
@@ -121,7 +133,9 @@ class Agent(murano_object.MuranoObject):
         else:
             return None
 
-    def call(self, template, resources, _context, timeout=600):
+    def call(self, template, resources, _context, timeout=None):
+        if timeout is None:
+            timeout = config.CONF.engine.agent_timeout
         self._check_enabled()
         plan = self.buildExecutionPlan(template, resources)
         return self._send(plan, True, timeout, _context)
@@ -131,7 +145,9 @@ class Agent(murano_object.MuranoObject):
         plan = self.buildExecutionPlan(template, resources)
         return self._send(plan, False, 0, _context)
 
-    def callRaw(self, plan, _context, timeout=600):
+    def callRaw(self, plan, _context, timeout=None):
+        if timeout is None:
+            timeout = config.CONF.engine.agent_timeout
         self._check_enabled()
         return self._send(plan, True, timeout, _context)
 

@@ -27,6 +27,8 @@ from murano.services import states
 LOG = logging.getLogger(__name__)
 API_NAME = 'Sessions'
 
+import re
+VALID_NAME_REGEX = re.compile('^[a-zA-Z]+[\w-]*$')
 
 class Controller(object):
 
@@ -155,6 +157,59 @@ class Controller(object):
         envs.EnvironmentServices.deploy(session,
                                         unit,
                                         request.context.auth_token)
+
+    @request_statistics.stats_count(API_NAME, 'Stop')
+    def stop(self, request, environment_id, session_id):
+        LOG.debug('Session:Stop <SessionId: {0}>'.format(session_id))
+
+        unit = db_session.get_session()
+        session = unit.query(models.Session).get(session_id)
+        session.tenant_id = request.context.tenant
+
+        self._check_session(request, environment_id, session, session_id)
+
+        if not sessions.SessionServices.validate(session):
+            msg = _('Session <SessionId {0}> is invalid').format(session_id)
+            LOG.error(msg)
+            raise exc.HTTPForbidden(explanation=msg)
+
+        if session.state != states.SessionState.DEPLOYING:
+            msg = _('Session <SessionId {0}> is not deploying').format(session_id)
+            LOG.error(msg)
+            raise exc.HTTPForbidden(explanation=msg)
+
+        envs.EnvironmentServices.stop(session,
+                                        unit,
+                                        request.context.auth_token)
+
+    @request_statistics.stats_count('Models', 'Create')
+    def create_model(self, request, body):
+        LOG.debug('Models:Create <Body {0}>'.format(body))
+        name = unicode(body['name'])
+        if VALID_NAME_REGEX.match(name):
+            try:
+                model = envs.EnvironmentServices.create_model(
+                    body.copy(),
+                    request.context)
+            except db_exc.DBDuplicateEntry:
+                msg = _('Mdel with specified name already exists')
+                LOG.exception(msg)
+                raise exc.HTTPConflict(explanation=msg)
+        else:
+            msg = _('Model name must contain only alphanumeric '
+                    'or "_-." characters, must start with alpha')
+            LOG.exception(msg)
+            raise exc.HTTPClientError(explanation=msg)
+
+        return model.to_dict()
+
+    @request_statistics.stats_count('Models', 'Show')
+    def get_model(self, request, model_id):
+        LOG.debug('Models:Show <Id: {0}>'.format(model_id))
+        target = {"model_id": model_id}
+        session = db_session.get_session()
+        model = session.query(models.Model).get(model_id)
+        return model.model
 
 
 def create_resource():

@@ -41,6 +41,7 @@ def load(package, yaml_content):
     package._ui = yaml_content.get('UI', 'ui.yaml')
     package._logo = yaml_content.get('Logo')
     package._tags = yaml_content.get('Tags')
+    package._version = yaml_content.get('Version')
 
 
 def create(source_directory, content, loader):

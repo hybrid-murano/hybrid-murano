@@ -169,6 +169,19 @@ class API(wsgi.Router):
                        controller=sessions_resource,
                        action='deploy',
                        conditions={'method': ['POST']})
+        mapper.connect('/environments/{environment_id}/sessions/'
+                       '{session_id}/stop',
+                       controller=sessions_resource,
+                       action='stop',
+                       conditions={'method': ['POST']})
+        mapper.connect('/models/',
+                       controller=sessions_resource,
+                       action='create_model',
+                       conditions={'method': ['POST']})
+        mapper.connect('/models/{model_id}',
+                       controller=sessions_resource,
+                       action='get_model',
+                       conditions={'method': ['GET']})
 
         statistics_resource = instance_statistics.create_resource()
         mapper.connect(

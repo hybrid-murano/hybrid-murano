@@ -162,6 +162,7 @@ def merge_lists(list1, list2):
             result.append(item)
     return result
 
+
 def merge_dicts(dict1, dict2, max_levels=0):
     result = {}
     for key, value1 in dict1.items():
@@ -191,7 +192,7 @@ def generate_id():
     return uuid.uuid4().hex
 
 
-def parallel_select(collection, func):
+def parallel_select(collection, func, limit=1000):
     # workaround for eventlet issue 232
     # https://github.com/eventlet/eventlet/issues/232
     def wrapper(element):
@@ -200,7 +201,7 @@ def parallel_select(collection, func):
         except Exception as e:
             return e, True, sys.exc_info()[2]
 
-    gpool = eventlet.greenpool.GreenPool()
+    gpool = eventlet.greenpool.GreenPool(limit)
     result = list(gpool.imap(wrapper, collection))
     try:
         exception = next(t for t in result if t[1])

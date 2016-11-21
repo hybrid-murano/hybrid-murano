@@ -92,6 +92,31 @@ class EnvironmentServices(object):
         return states.EnvironmentStatus.READY
 
     @staticmethod
+    def create_model(params, context):
+        # tagging model by tenant_id for later checks
+        """Creates model with specified params, in particular - name
+
+           :param params: Dict, e.g. {'name': 'env-name'}
+           :param context: request context to get the tenant id and the token
+           :return: Created Environment
+        """
+        params['tenant_id'] = context.tenant
+
+        model = models.Model()
+        model.update(params)
+
+        unit = db_session.get_session()
+        with unit.begin():
+            unit.add(model)
+
+        # saving model as Json to itself
+        #model.update({'model': data})
+        model.save(unit)
+
+        return model
+
+
+    @staticmethod
     def create(environment_params, context):
         # tagging environment by tenant_id for later checks
         """Creates environment with specified params, in particular - name
@@ -256,6 +281,20 @@ class EnvironmentServices(object):
             EnvironmentServices.remove(session.environment_id)
         else:
             sessions.SessionServices.deploy(session, environment, unit, token)
+
+    @staticmethod
+    def stop(session, unit, token):
+        environment = unit.query(models.Environment).get(
+            session.environment_id)
+        
+        if session.environment_id == get_cloud_id():
+            environment.tenant_id = session.tenant_id;
+
+        if (session.description['Objects'] is None and
+                'ObjectsCopy' not in session.description):
+            EnvironmentServices.remove(session.environment_id)
+        else:
+            sessions.SessionServices.stop(session, environment, unit, token)
 
     @staticmethod
     def _objectify(data, replacements):
